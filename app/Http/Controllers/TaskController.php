@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\ToDoList;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class TaskController extends Controller
 {
@@ -41,27 +43,6 @@ class TaskController extends Controller
     }
 
     /**
-     * @param StoreTaskRequest $request
-     * @param ToDoList $toDoList
-     * @return JsonResponse
-     */
-    public function store(StoreTaskRequest $request, ToDoList $toDoList): JsonResponse
-    {
-        Task::query()->create(
-            array_merge($request->validated(), [
-                'to_do_list_id' => $toDoList->id
-            ])
-        );
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'message' => __('models.lists.messages.store.success')
-            ]
-        ]);
-    }
-
-    /**
      * @param ToDoList $toDoList
      * @param Task $task
      * @return JsonResponse
@@ -73,6 +54,7 @@ class TaskController extends Controller
             'data' => [
                 'message' => __('models.list.messages.find.success'),
                 'entity' => $task,
+                'tags' => $task->tags
             ]
         ]);
     }
@@ -85,13 +67,82 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, ToDoList $toDoList, Task $task): JsonResponse
     {
-        $task->update($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('image')) {
+            $originalFile = $request->file('image');
+
+            $originalFile->store('images/tasks/' . $task->id, 'public');
+
+            $data['image'] = $originalFile->hashName();
+
+            $thumbnailPath = 'images/tasks/' . $task->id . '/thumbnail_' . $originalFile->hashName();
+            $thumbnailImage = Image::read($originalFile)->resize(150, 150)->encode();
+
+            Storage::disk('public')->put($thumbnailPath, $thumbnailImage);
+
+            if ($task->image) {
+                $pathToImage = explode('/', $task->image);
+
+                $imageName = array_pop($pathToImage);
+
+                Storage::disk('public')->delete($task->image);
+                Storage::disk('public')->delete(str_replace($imageName, 'thumbnail_' . $imageName, $imageName));
+            }
+        }
+
+        $task->update($data);
+
+        if ($request->has('tags')) {
+            $task->tags()->sync($request->input('tags'));
+        }
 
         return response()->json([
             'success' => true,
             'data' => [
                 'message' => __('models.tasks.messages.update.success'),
-                'entity' => $task
+                'entity' => $task,
+                'tags' => $task->tags
+            ]
+        ]);
+    }
+
+    /**
+     * @param StoreTaskRequest $request
+     * @param ToDoList $toDoList
+     * @return JsonResponse
+     */
+    public function store(StoreTaskRequest $request, ToDoList $toDoList): JsonResponse
+    {
+        $data = $request->validated();
+
+        $task = Task::query()->create(
+            array_merge($data, [
+                'to_do_list_id' => $toDoList->id
+            ])
+        );
+
+        if ($request->hasFile('image')) {
+            $originalFile = $request->file('image');
+
+            $originalFile->store('images/tasks/' . $task->id, 'public');
+
+            $data['image'] = $originalFile->hashName();
+
+            $thumbnailPath = 'images/tasks/' . $task->id . '/thumbnail_' . $originalFile->hashName();
+            $thumbnailImage = Image::read($originalFile)->resize(150, 150)->encode();
+
+            Storage::disk('public')->put($thumbnailPath, $thumbnailImage);
+        }
+
+        if ($request->has('tags')) {
+            $task->tags()->sync($request->input('tags'));
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => __('models.lists.messages.store.success'),
+                'task' => $task
             ]
         ]);
     }

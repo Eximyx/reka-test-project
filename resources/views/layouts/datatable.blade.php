@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container ">
+    <div class="container-fluid">
         <div class="row justify-content-center">
             <div id="success" class="mb-2"></div>
             <div id="errors" class="mb-2"></div>
-            <div class="col-md-8">
+            <div class="col-md-12 col-lg-10 col-xl-8">
                 @yield('datatable')
             </div>
         </div>
@@ -38,6 +38,6 @@
 @endsection
 
 @push('scripts')
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css"/>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
 @endpush

@@ -20,13 +20,17 @@ class TaskDataTable extends DataTable
     }
 
     /**
-     * Build the DataTable class.
-     *
-     * @param QueryBuilder $query Results from query() method.
+     * @param QueryBuilder $query
+     * @return EloquentDataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('images', function (Task $entity) {
+                return view('tasks.image-thumbnail', [
+                    'task' => $entity
+                ]);
+            })
             ->addColumn('tags', function (Task $entity) {
                 return view('tasks.tags', [
                     'tags' => $entity->tags()->get()
@@ -42,7 +46,8 @@ class TaskDataTable extends DataTable
     }
 
     /**
-     * Get the query source of dataTable.
+     * @param Task $model
+     * @return QueryBuilder
      */
     public function query(Task $model): QueryBuilder
     {
@@ -50,7 +55,7 @@ class TaskDataTable extends DataTable
     }
 
     /**
-     * Optional method if you want to use the html builder.
+     * @return HtmlBuilder
      */
     public function html(): HtmlBuilder
     {
@@ -63,40 +68,45 @@ class TaskDataTable extends DataTable
             ->paging()
             ->orderBy(0)
             ->responsiveDetails(true)
-            ->fixedColumns("action")
+            ->fixedColumns()
             ->selectStyleSingle();
     }
 
     /**
-     * Get the dataTable columns definition.
+     * @return array
      */
     public function getColumns(): array
     {
-        $columns = config("datatables.tasks");
+        $columns = config('datatables.tasks');
 
         $array[] = Column::make('id')->addClass('col-1 text-center');
 
         foreach ($columns as $key => $value) {
             $array[] = Column::computed($key)
-                ->title($value["title"])
+                ->title($value['title'])
                 ->orderable()
                 ->searchable();
         }
 
         $array[] = Column::computed('tags')
-            ->searchable(false);
+            ->addClass('col-auto')
+            ->searchable();
+
+        $array[] = Column::computed('images')
+            ->addClass('col-auto')
+            ->searchable();
 
         $array[] = Column::computed('action')
             ->searchable(false)
             ->width(60)
             ->addClass('text-center')
-            ->title("");
+            ->title('');
 
         return $array;
     }
 
     /**
-     * Get the filename for export.
+     * @return string
      */
     protected function filename(): string
     {

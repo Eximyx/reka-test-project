@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ToDoListController;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('{toDoList}', 'update')->name('todolist.update');
         Route::get('{toDoList}', 'show')->name('todolist.show');
     });
+
+    Route::resource('tags', TagController::class);
 
     Route::controller(TaskController::class)->prefix('lists/{toDoList}/tasks')->group(function () {
         Route::get('', 'index')->name('tasks.index');

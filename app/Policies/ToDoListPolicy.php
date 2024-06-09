@@ -18,6 +18,15 @@ class ToDoListPolicy
 
     /**
      * @param User $user
+     * @return bool
+     */
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @param User $user
      * @param ToDoList $toDoList
      * @return bool
      */

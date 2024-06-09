@@ -33,7 +33,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return $task->todolist->user_id === $user->id;
+        return true;
     }
 
     /**

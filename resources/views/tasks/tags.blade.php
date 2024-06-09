@@ -1,3 +1,3 @@
 @foreach($tags as $tag)
-    {{$tag->title}}
+    <span class="badge bg-primary">{{ $tag->title }}</span>
 @endforeach

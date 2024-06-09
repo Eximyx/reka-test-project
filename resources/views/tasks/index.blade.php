@@ -4,10 +4,34 @@
     <div class="container">
         <div class="row">
             <button class="btn btn-success" onclick="add()">Добавить</button>
+            <button class="btn btn-secondary mt-2" onclick="createTag()">Создать тег</button>
         </div>
 
         <div class="row">
             {!! $dataTable->table() !!}
+        </div>
+    </div>
+    <div class="modal fade" id="tag-modal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tagModalLabel">Создать тег</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="tag-form" action="javascript:void(0)" class="mt-2" enctype="multipart/form-data">
+                        <div id="tag-validation-errors" class="mb-2"></div>
+                        <div class="form-group">
+                            <label class="form-label" for="tag-title">Название тега</label>
+                            <input type="text" class="form-control" id="tag-title">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTag()">Сохранить</button>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -18,7 +42,11 @@
         <div class="col-md-8">
             <div class="form-group">
                 <label class="form-label" for="title">{{__('models.form.todolist.title')}}</label>
-                <input type="text" class="form-control" name="title" id="title" required>
+                <input type="text" class="form-control" name="title" id="title">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="tags">Теги</label>
+                <select class="form-control" name="tags[]" id="tags" multiple></select>
             </div>
             <div class="form-group">
                 <label class="form-label" for="image">Загрузить изображение</label>
@@ -41,12 +69,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for creating a new tag -->
 @endsection
 
 @push('scripts')
     {!! $dataTable->scripts(attributes: ['type' => 'module']) !!}
     <script type="text/javascript">
         const urls = "{{ request()->url() }}";
+        loadTags();
 
         function add() {
             $('#form')[0].reset();
@@ -54,7 +85,48 @@
             $('#modal-title').text("Добавление")
             $('#id').val('');
             $("#image").val(null);
+        }
 
+        function createTag() {
+            $('#tag-modal').modal('show');
+            $('#tag-form')[0].reset();
+        }
+
+        function saveTag() {
+            const tagTitle = $('#tag-title').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ route('tags.store') }}',
+                data: {title: tagTitle},
+                success: function (response) {
+                    if (response.success) {
+                        $('#tag-modal').modal('hide');
+                        loadTags();
+                    } else {
+                        $('#tag-validation-errors').html('<li class="alert alert-danger">' + response.message + '</li>');
+                    }
+                },
+                error: function (response) {
+                    $('#tag-validation-errors').html('<li class="alert alert-danger">' + response.responseJSON.message + '</li>');
+                }
+            });
+        }
+
+        function loadTags() {
+            $.ajax({
+                type: 'GET',
+                url: '{{ route('tags.index') }}',
+                success: function (response) {
+                    if (response.success) {
+                        const tags = response.tags;
+                        $('#tags').empty();
+                        tags.forEach(tag => {
+                            $('#tags').append(new Option(tag.title, tag.id));
+                        });
+                    }
+                }
+            });
         }
 
         function editFunc(id) {
@@ -81,6 +153,8 @@
                                 $('#' + key).val(value);
                             }
                         )
+                        const tags = data.tags.map(tag => tag.id);
+                        $('#tags').val(tags).trigger('change');
                     } else {
                         $("#errors").append("<li class='alert alert-danger'>" + res.data.message + "</li>")
                         setTimeout(() => {
@@ -140,6 +214,10 @@
                 }
             });
 
+            $('#tags').select();
+
+            loadTags();
+
             $('#image').on("change", (e) => {
                 console.log(e.target.files[0]);
                 if (!previewFunc(e.target.files[0])) {
@@ -191,7 +269,6 @@
                         var oTable = $('#entity-table').DataTable();
                         oTable.draw(false);
                         $("#form")[0].reset();
-
 
                         if (data['success']) {
                             $("#success").append("<li class='alert alert-success'>" + data.data.message);
