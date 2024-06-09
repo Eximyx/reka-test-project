@@ -2,65 +2,94 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\ToDoListDataTable;
 use App\Http\Requests\StoreToDoListRequest;
 use App\Http\Requests\UpdateToDoListRequest;
 use App\Models\ToDoList;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ToDoListController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        //
+        $this->authorizeResource(ToDoList::class, 'toDoList');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return mixed
      */
-    public function create()
+    public function index(): mixed
     {
-        //
+        $dataTable = app(ToDoListDataTable::class, [
+            'userId' => Auth::user()->id
+        ]);
+
+        return $dataTable->render('todolist.index');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @param StoreToDoListRequest $request
+     * @return JsonResponse
      */
-    public function store(StoreToDoListRequest $request)
+    public function store(StoreToDoListRequest $request): JsonResponse
     {
-        //
+        ToDoList::query()->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => __('models.lists.messages.store.success')
+            ]
+        ]);
     }
 
     /**
-     * Display the specified resource.
+     * @param ToDoList $toDoList
+     * @return JsonResponse
      */
-    public function show(ToDoList $toDoList)
+    public function edit(ToDoList $toDoList): JsonResponse
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => __('models.list.messages.find.success'),
+                'entity' => $toDoList,
+            ]
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * @param UpdateToDoListRequest $request
+     * @param ToDoList $toDoList
+     * @return JsonResponse
      */
-    public function edit(ToDoList $toDoList)
+    public function update(UpdateToDoListRequest $request, ToDoList $toDoList): JsonResponse
     {
-        //
+        $toDoList->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => __('models.list.messages.update.success'),
+                'entity' => $toDoList
+            ]
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param ToDoList $toDoList
+     * @return JsonResponse
      */
-    public function update(UpdateToDoListRequest $request, ToDoList $toDoList)
+    public function destroy(ToDoList $toDoList): JsonResponse
     {
-        //
-    }
+        $toDoList->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ToDoList $toDoList)
-    {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'message' => __('models.list.messages.delete.success')
+            ]
+        ]);
     }
 }

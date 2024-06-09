@@ -20,8 +20,8 @@ class Tag extends Model
     /**
      * @return BelongsToMany
      */
-    public function tags(): BelongsToMany
+    public function task(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Task::class);
     }
 }

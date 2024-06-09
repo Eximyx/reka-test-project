@@ -14,7 +14,8 @@ class ToDoList extends Model
      * @var string[]
      */
     protected $fillable = [
-        'title'
+        'title',
+        'user_id'
     ];
 
     /**

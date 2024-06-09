@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Task;
+use App\Models\ToDoList;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Task>
+ * @extends Factory<Task>
  */
 class TaskFactory extends Factory
 {
@@ -17,7 +19,9 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->title(32),
+            'image' => fake()->image(),
+            'todo_list_id' => ToDoList::query()->inRandomOrder()->first()->id
         ];
     }
 }

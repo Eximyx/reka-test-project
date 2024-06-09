@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\ToDoList;
 use Illuminate\Database\Seeder;
 
 class ToDoListSeeder extends Seeder
@@ -12,6 +12,6 @@ class ToDoListSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        ToDoList::factory(50)->create();
     }
 }

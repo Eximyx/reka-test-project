@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Task;
 use Illuminate\Database\Seeder;
 
 class TaskSeeder extends Seeder
@@ -12,6 +12,6 @@ class TaskSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        Task::factory(50)->create();
     }
 }
