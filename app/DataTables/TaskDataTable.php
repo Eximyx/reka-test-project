@@ -51,7 +51,16 @@ class TaskDataTable extends DataTable
      */
     public function query(Task $model): QueryBuilder
     {
-        return $model->newQuery()->where('to_do_list_id', $this->listId);
+        $query = $model->newQuery()->where('to_do_list_id', $this->listId);
+
+        if (request()->has('tags')) {
+            $tags = request('tags');
+            $query->whereHas('tags', function ($q) use ($tags) {
+                $q->whereIn('tags.id', $tags);
+            });
+        }
+
+        return $query;
     }
 
     /**

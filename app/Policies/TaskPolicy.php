@@ -20,7 +20,7 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        return true;
+        return false;
     }
 
     public function edit(User $user, Task $task): bool

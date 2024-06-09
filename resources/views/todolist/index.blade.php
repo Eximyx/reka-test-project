@@ -2,12 +2,13 @@
 
 @section('datatable')
     <div class="container">
-        <div class="row">
-            <button class="btn btn-success" onclick="add()">Добавить</button>
+        <div class="row justify-content-end">
+            <div class="col-auto">
+                <button class="btn btn-success" onclick="add()">Добавить</button>
+            </div>
         </div>
-        <div class="row">
-            {!! $dataTable->table() !!}
-        </div>
+
+        {!! $dataTable->table() !!}
     </div>
 @endsection
 
@@ -16,38 +17,10 @@
     <div class="row">
         <div class="col-md-8">
             <div class="form-group">
-                <label class="form-label" for="title">{{__('models.form.todolist.title')}}</label>
+                <label class="form-label" for="title">Списки</label>
                 <input type="text" class="form-control" name="title" id="title" required>
             </div>
-            {{--            <div class="form-group">--}}
-            {{--                <label class="form-label" for="image">Загрузить изображение</label>--}}
-            {{--                <div class="form-control-wrap">--}}
-            {{--                    <div class="form-file">--}}
-            {{--                        <input type="file" name="image" multiple="" class="form-control" id="image"--}}
-            {{--                               accept=".jpg, .jpeg, .png">--}}
-            {{--                    </div>--}}
-            {{--                    <div id="img-div" class="form-control" hidden>--}}
-            {{--                        <img id="img-preview" class="img-thumbnail" src="" alt="">--}}
-            {{--                    </div>--}}
-            {{--                </div>--}}
-            {{--            </div>--}}
         </div>
-        {{--        <div class="col-md-6">--}}
-        {{--            <div class="form-group">--}}
-        {{--                <label class="form-label" for="description">Описание</label>--}}
-        {{--                <div class="form-control-wrap">--}}
-        {{--                    <textarea class="form-control" name="description" id="description"--}}
-        {{--                              required rows="3"></textarea>--}}
-        {{--                </div>--}}
-        {{--            </div>--}}
-        {{--        </div>--}}
-        {{--        <div class="col-md-12">--}}
-        {{--            <div class="form-group">--}}
-        {{--                <label class="form-label" for="content">Содержимое</label>--}}
-        {{--                <textarea class="form-control" name="content" id="content"--}}
-        {{--                          required rows="3"></textarea>--}}
-        {{--            </div>--}}
-        {{--        </div>--}}
         <div class="row justify-content-end mt-2">
             <div class="col-md-auto">
                 <button id="btn-save" type="submit" class="btn btn-primary">

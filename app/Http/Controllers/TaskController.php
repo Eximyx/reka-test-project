@@ -39,7 +39,7 @@ class TaskController extends Controller
             ->distinct()
             ->get();
 
-        return $dataTable->render('tasks.index', ['tags' => $tags]);
+        return $dataTable->render('tasks.index', ['toDoList' => $toDoList, 'tags' => $tags]);
     }
 
     /**
@@ -52,7 +52,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.list.messages.find.success'),
+                'message' => 'Задача успешно найдена',
                 'entity' => $task,
                 'tags' => $task->tags
             ]
@@ -99,7 +99,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.tasks.messages.update.success'),
+                'message' => 'Вы успешно обновили информацию о задаче',
                 'entity' => $task,
                 'tags' => $task->tags
             ]
@@ -132,6 +132,7 @@ class TaskController extends Controller
             $thumbnailImage = Image::read($originalFile)->resize(150, 150)->encode();
 
             Storage::disk('public')->put($thumbnailPath, $thumbnailImage);
+            $task->update(['image' => $data['image']]);
         }
 
         if ($request->has('tags')) {
@@ -141,7 +142,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.lists.messages.store.success'),
+                'message' => 'Вы успешно добавили задачу',
                 'task' => $task
             ]
         ]);
@@ -154,12 +155,16 @@ class TaskController extends Controller
      */
     public function destroy(ToDoList $toDoList, Task $task): JsonResponse
     {
-        $task->delete();
+        Storage::delete($task->getPathToImage() . '/' . $task->image);
+        Storage::delete($task->getPathToImage() . '/thumbnail_' . $task->image);
+
+//        $task->delete();
+        logger()->info('Deleting image:', ['path' => $task->getPathToImage() . '/' . $task->image]);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.list.messages.delete.success')
+                'message' => 'Вы успешно удалили задачу'
             ]
         ]);
     }

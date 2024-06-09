@@ -14,7 +14,7 @@ class TagController extends Controller
             'title' => 'required|string|max:32'
         ]);
 
-        $tag = Tag::query()->create($validated);
+        $tag = Tag::query()->firstOrCreate($validated);
 
         return response()->json(['success' => true, 'tag' => $tag]);
     }

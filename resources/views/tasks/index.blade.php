@@ -2,15 +2,26 @@
 
 @section('datatable')
     <div class="container">
-        <div class="row">
-            <button class="btn btn-success" onclick="add()">Добавить</button>
-            <button class="btn btn-secondary mt-2" onclick="createTag()">Создать тег</button>
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <button class="btn btn-success" onclick="add()">Добавить</button>
+                <button class="btn btn-secondary mb-2 mt-2 mb-md-0 mt-md-0" onclick="createTag()">Создать тег</button>
+            </div>
+            <div class="col-md-4">
+                <label for="tag-filter">Фильтр по тегам</label>
+                <select id="tag-filter" class="form-control" multiple>
+                    @foreach($tags as $tag)
+                        <option value="{{ $tag->id }}">{{ $tag->title }}</option>
+                    @endforeach
+                </select>
+                <button id="reset-filters" class="btn btn-secondary mt-2">Сбросить фильтры</button>
+            </div>
         </div>
-
         <div class="row">
             {!! $dataTable->table() !!}
         </div>
     </div>
+
     <div class="modal fade" id="tag-modal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -41,7 +52,7 @@
     <div class="row">
         <div class="col-md-8">
             <div class="form-group">
-                <label class="form-label" for="title">{{__('models.form.todolist.title')}}</label>
+                <label class="form-label" for="title">Заголовок задачи</label>
                 <input type="text" class="form-control" name="title" id="title">
             </div>
             <div class="form-group">
@@ -52,7 +63,7 @@
                 <label class="form-label" for="image">Загрузить изображение</label>
                 <div class="form-control-wrap">
                     <div class="form-file">
-                        <input type="file" name="image" multiple="" class="form-control" id="image"
+                        <input type="file" name="image" multiple class="form-control" id="image"
                                accept=".jpg, .jpeg, .png">
                     </div>
                     <div id="img-div" class="form-control" hidden>
@@ -63,18 +74,15 @@
         </div>
         <div class="row justify-content-end mt-2">
             <div class="col-md-auto">
-                <button id="btn-save" type="submit" class="btn btn-primary">
-                    Подтвердить
+                <button id="btn-save" type="submit"
+                        class="btn btn-primary">Подтвердить
                 </button>
             </div>
         </div>
     </div>
-
-    <!-- Modal for creating a new tag -->
 @endsection
 
 @push('scripts')
-    {!! $dataTable->scripts(attributes: ['type' => 'module']) !!}
     <script type="text/javascript">
         const urls = "{{ request()->url() }}";
         loadTags();
@@ -144,13 +152,18 @@
 
                     let entity = data["entity"];
 
+                    $("#image").val(null);
+                    $("#img-preview").attr('src', null);
+
                     if (res['success']) {
                         $('#form')[0].reset();
                         $('#modal-title').text("Редактирование");
                         $('#modal-form').modal("show");
 
                         $.each(entity, function (key, value) {
-                                $('#' + key).val(value);
+                                if (!key.includes('image')) {
+                                    $('#' + key).val(value);
+                                }
                             }
                         )
                         const tags = data.tags.map(tag => tag.id);
@@ -214,9 +227,34 @@
                 }
             });
 
-            $('#tags').select();
-
             loadTags();
+
+            var table = $('#entity-table').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '{{ route("tasks.index", ["toDoList" => $toDoList->id]) }}',
+                    data: function (d) {
+                        d.tags = $('#tag-filter').val();
+                    }
+                },
+                columns: [
+                    {data: 'id', name: 'id'},
+                    {data: 'title', name: 'title'},
+                    {data: 'tags', name: 'tags', orderable: false, searchable: false},
+                    {data: 'images', name: 'images', orderable: false, searchable: false},
+                    {data: 'action', name: 'action', orderable: false, searchable: false}
+                ]
+            });
+
+            $('#tag-filter').change(function () {
+                table.draw();
+            });
+
+            $('#reset-filters').click(function () {
+                $('#tag-filter').val(null).trigger('change');
+                table.draw();
+            });
 
             $('#image').on("change", (e) => {
                 console.log(e.target.files[0]);
@@ -229,7 +267,7 @@
 
             function previewFunc(file) {
                 if (file === undefined || !file.type.match(/image.*/)) {
-                    return false
+                    return false;
                 }
                 const reader = new FileReader();
                 reader.addEventListener("load", (e) => {
@@ -299,6 +337,45 @@
                     },
                 });
             });
+
+            function saveTag() {
+                const tagTitle = $('#tag-title').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ route('tags.store') }}',
+                    data: {title: tagTitle},
+                    success: function (response) {
+                        if (response.success) {
+                            $('#tag-modal').modal('hide');
+                            loadTags();
+                        } else {
+                            $('#tag-validation-errors').html('<li class="alert alert-danger">' + response.message + '</li>');
+                        }
+                    },
+                    error: function (response) {
+                        $('#tag-validation-errors').html('<li class="alert alert-danger">' + response.responseJSON.message + '</li>');
+                    }
+                });
+            }
+
+            function loadTags() {
+                $.ajax({
+                    type: 'GET',
+                    url: '{{ route('tags.index') }}',
+                    success: function (response) {
+                        if (response.success) {
+                            const tags = response.tags;
+                            $('#tags').empty();
+                            $('#tag-filter').empty();
+                            tags.forEach(tag => {
+                                $('#tags').append(new Option(tag.title, tag.id));
+                                $('#tag-filter').append(new Option(tag.title, tag.id));
+                            });
+                        }
+                    }
+                });
+            }
         });
     </script>
 @endpush

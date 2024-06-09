@@ -39,7 +39,7 @@ class ToDoListController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.lists.messages.store.success')
+                'message' => 'Вы успешно создали список'
             ]
         ]);
     }
@@ -53,7 +53,7 @@ class ToDoListController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.list.messages.find.success'),
+                'message' => 'Список успешно найден',
                 'entity' => $toDoList,
             ]
         ]);
@@ -71,7 +71,7 @@ class ToDoListController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.list.messages.update.success'),
+                'message' => 'Вы успешно обновили список',
                 'entity' => $toDoList
             ]
         ]);
@@ -88,7 +88,7 @@ class ToDoListController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'message' => __('models.list.messages.delete.success')
+                'message' => 'Вы успешно удалили список'
             ]
         ]);
     }
