@@ -64,3 +64,15 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Первый запуск
+```
+composer install
+npm install && npm build
+php artisan key:generate
+```
+### Необходимо изменить в .env информацю о вашей БД, после чего запустить миграцию
+```
+php artisan migrate
+```
+
